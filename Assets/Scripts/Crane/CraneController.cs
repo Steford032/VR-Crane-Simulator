@@ -7,11 +7,15 @@ public class CraneController : MonoBehaviour
     [SerializeField] private Rigidbody bridgeRigidbody;  // Ссылка на Rigidbody моста (BeamHolder)
     [SerializeField] private Rigidbody trolleyRigidbody; // Ссылка на Rigidbody тележки (Trolley)
     [SerializeField] private Rigidbody hookRigidbody;    // Ссылка на Rigidbody крюка (Hook)
+    [SerializeField] private Transform tubeTransform;    // Катушка тележки
+
+    [SerializeField] private AudioSource chainAudioSource;
 
     [Header("Скорости движения")]
     [SerializeField] private float bridgeSpeed = 1.5f;   // Скорость моста (Север/Юг)
     [SerializeField] private float trolleySpeed = 3.0f;  // Скорость тележки (Запад/Восток)
     [SerializeField] private float hookSpeed = 1.5f;     // Скорость крюка (Вверх/Вниз)
+    [SerializeField] private float tubeRotationSpeed = 150f; // Скорость вращения катушки
 
     [Header("Границы движения моста (по оси Z)")]
     [SerializeField] private float minZBoundary = -3;
@@ -45,7 +49,11 @@ public class CraneController : MonoBehaviour
     // FixedUpdate используется для всех операций с Rigidbody
     private void FixedUpdate()
     {
-        if (movementDirection == Vector3.zero) return;
+        if (movementDirection == Vector3.zero)
+        {
+            StopChainSound();
+            return;
+        }
 
         // Движение Моста (Bridge) по глобальной оси Z с границами (остается без изменений)
         Vector3 bridgeVelocity = new Vector3(0, 0, movementDirection.z) * bridgeSpeed;
@@ -81,6 +89,16 @@ public class CraneController : MonoBehaviour
 
             // Устанавливаем новую локальную позицию
             hookRigidbody.transform.localPosition = localHookPos;
+
+            if (!(localHookPos.y <= minYBoundary) && !(localHookPos.y >= maxYBoundary))
+            {
+                tubeTransform.Rotate(Vector3.right, -movementDirection.y * tubeRotationSpeed * Time.fixedDeltaTime, Space.Self);
+                PlayChainSound();
+            }
+            else
+            {
+                StopChainSound();
+            }
         }
     }
 
@@ -102,5 +120,23 @@ public class CraneController : MonoBehaviour
     public void StopMovement()
     {
         movementDirection = Vector3.zero;
+    }
+
+    void PlayChainSound()
+    {
+        // Проигрываем звук, только если он еще не проигрывается
+        if (!chainAudioSource.isPlaying)
+        {
+            chainAudioSource.Play();
+        }
+    }
+
+    void StopChainSound()
+    {
+        // Останавливаем звук, если он проигрывается
+        if (chainAudioSource.isPlaying)
+        {
+            chainAudioSource.Stop();
+        }
     }
 }

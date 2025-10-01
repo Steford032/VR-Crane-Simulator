@@ -8,6 +8,13 @@ public class DebugCamera : MonoBehaviour
 
     private float rotationX = 0.0f;
     private float rotationY = 0.0f;
+    void Start()
+    {
+        // ѕри старте считываем начальный поворот камеры из Transform
+        Vector3 startRotation = transform.eulerAngles;
+        rotationX = startRotation.y;
+        rotationY = startRotation.x;
+    }
 
     void Update()
     {
@@ -21,7 +28,7 @@ public class DebugCamera : MonoBehaviour
         }
 
         float currentSpeed = Input.GetKey(KeyCode.LeftShift) ? moveSpeed * sprintMultiplier : moveSpeed;
-
+    
         float moveX = Input.GetAxis("Horizontal") * currentSpeed * Time.deltaTime;
         float moveZ = Input.GetAxis("Vertical") * currentSpeed * Time.deltaTime;
 

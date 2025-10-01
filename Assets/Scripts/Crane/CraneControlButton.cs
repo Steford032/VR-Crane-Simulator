@@ -7,26 +7,50 @@ using UnityEngine.EventSystems;
 public class MovementEvent : UnityEvent<Vector3> { }
 
 // Your class now uses the definition above
-public class CraneControlButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
+public class CraneControlButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerEnterHandler, IPointerExitHandler
 {
-    [Tooltip("The direction this button sends.")]
+    [Header("Настройки кнопки")]
+    [Tooltip("Направление, которое эта кнопка отправляет.")]
     [SerializeField] private Vector3 movementDirection;
+    [Tooltip("Текст подсказки для этой кнопки.")]
+    [SerializeField] private string tooltipText = "Описание действия";
 
-    [Header("Events for CraneController")]
+    [Header("Ссылки на компоненты")]
+    [Tooltip("Объект, который будет включаться при наведении.")]
+    [SerializeField] private GameObject highlightObject;
+
+    [Header("События для CraneController")]
     public MovementEvent OnButtonPressed;
     public UnityEvent OnButtonReleased;
 
-    // This method is automatically called when the Vive Caster detects a press
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (highlightObject != null)
+        {
+            highlightObject.SetActive(true); // Включаем подсветку
+        }
+        TooltipManager.instance.ShowTooltip(tooltipText);
+    }
+
+    // Вызывается, когда указатель покидает коллайдер
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        if (highlightObject != null)
+        {
+            highlightObject.SetActive(false);
+        }
+        TooltipManager.instance.HideTooltip();
+    }
+
+    // Вызывается при нажатии
     public void OnPointerDown(PointerEventData eventData)
     {
-        Debug.Log(gameObject.name + " PRESSED!"); // Debug line for testing
         OnButtonPressed.Invoke(movementDirection);
     }
 
-    // This method is automatically called when the Vive Caster detects a release
+    // Вызывается при отпускании
     public void OnPointerUp(PointerEventData eventData)
     {
-        Debug.Log(gameObject.name + " RELEASED!"); // Debug line for testing
         OnButtonReleased.Invoke();
     }
 }
